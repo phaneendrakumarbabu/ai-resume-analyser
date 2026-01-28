@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 187 85% 43%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 187 85% 43%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(187 85% 43%) 0%, hsl(262 83% 58%) 100%);
+    --gradient-bg: linear-gradient(135deg, hsl(210 40% 98%) 0%, hsl(220 30% 96%) 50%, hsl(240 20% 98%) 100%);
+    --gradient-card: linear-gradient(135deg, hsla(0 0% 100% / 0.9) 0%, hsla(0 0% 100% / 0.7) 100%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsla(187 85% 43% / 0.15) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsla(262 83% 58% / 0.1) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsla(187 85% 43% / 0.1) 0px, transparent 50%),
+                     radial-gradient(at 80% 50%, hsla(262 83% 58% / 0.08) 0px, transparent 50%),
+                     radial-gradient(at 0% 100%, hsla(187 85% 43% / 0.1) 0px, transparent 50%);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 187 85% 53%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 262 83% 68%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 46%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 0%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 187 85% 53%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(187 85% 53%) 0%, hsl(262 83% 68%) 100%);
+    --gradient-bg: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(230 40% 8%) 50%, hsl(250 35% 10%) 100%);
+    --gradient-card: linear-gradient(135deg, hsla(222 47% 11% / 0.8) 0%, hsla(222 47% 11% / 0.6) 100%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsla(187 85% 53% / 0.12) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsla(262 83% 68% / 0.1) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsla(187 85% 53% / 0.08) 0px, transparent 50%),
+                     radial-gradient(at 80% 50%, hsla(262 83% 68% / 0.06) 0px, transparent 50%),
+                     radial-gradient(at 0% 100%, hsla(187 85% 53% / 0.08) 0px, transparent 50%);
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background: var(--gradient-bg);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 8px 32px hsla(var(--foreground) / 0.08);
+  }
+
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-border {
+    position: relative;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient-primary);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .mesh-bg {
+    background-image: var(--gradient-mesh);
+    background-attachment: fixed;
+  }
+
+  .skill-tag {
+    @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200;
+  }
+
+  .skill-tag-matched {
+    @apply bg-success/10 text-success border border-success/20;
+  }
+
+  .skill-tag-missing {
+    @apply bg-destructive/10 text-destructive border border-destructive/20;
+  }
+
+  .progress-bar {
+    @apply h-3 rounded-full overflow-hidden bg-muted;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-1000 ease-out;
+    background: var(--gradient-primary);
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsla(var(--primary) / 0.3); }
+    50% { box-shadow: 0 0 40px hsla(var(--primary) / 0.5); }
+  }
+}
