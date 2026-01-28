@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -18,12 +18,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { historyService, AnalysisHistory } from '@/lib/historyService';
 import { exportAnalysisToPDF, exportComparisonToPDF } from '@/lib/pdfExport';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const [history, setHistory] = useState<AnalysisHistory[]>([]);
   const [stats, setStats] = useState(historyService.getStats());
   const [chartData, setChartData] = useState(historyService.getChartData());
   const [selectedAnalyses, setSelectedAnalyses] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to view your dashboard.',
+        variant: 'destructive',
+      });
+      navigate('/signin');
+    }
+  }, [currentUser, navigate, toast]);
 
   useEffect(() => {
     loadData();

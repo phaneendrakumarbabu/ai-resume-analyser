@@ -1,20 +1,30 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { validateGeminiKey, getEnvConfig } from './config/envValidator';
+import { log, LogLevel, maskApiKey } from './logger';
 
 // Lazy initialization - only create client when needed
-let openaiClient: OpenAI | null = null;
+let geminiClient: GoogleGenerativeAI | null = null;
+let validationCache: { isValid: boolean; error?: string } | null = null;
 
-function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OpenAI API key not configured');
+function getGeminiClient(): GoogleGenerativeAI {
+  if (!geminiClient) {
+    const config = getEnvConfig();
+    const validation = validateGeminiKey(config.geminiApiKey);
+    
+    if (!validation.isValid) {
+      log(LogLevel.ERROR, 'Gemini client initialization failed', {
+        error: validation.error,
+        keyPresent: !!config.geminiApiKey,
+        keyPrefix: maskApiKey(config.geminiApiKey)
+      });
+      throw new Error(validation.error || 'Gemini API key not configured');
     }
-    openaiClient = new OpenAI({
-      apiKey: apiKey,
-      dangerouslyAllowBrowser: true // Note: In production, use a backend proxy
-    });
+    
+    geminiClient = new GoogleGenerativeAI(config.geminiApiKey!.trim());
+    
+    log(LogLevel.INFO, 'Gemini client initialized successfully');
   }
-  return openaiClient;
+  return geminiClient;
 }
 
 export interface AIAnalysisResult {
@@ -32,11 +42,16 @@ export async function analyzeResumeWithAI(
   roleName: string,
   requiredSkills: string[]
 ): Promise<AIAnalysisResult> {
-  console.log('🤖 Starting AI analysis for role:', roleName);
+  log(LogLevel.INFO, 'Starting AI analysis with Gemini', { roleName, skillCount: requiredSkills.length });
   
   try {
-    const openai = getOpenAIClient();
-    console.log('✅ OpenAI client created successfully');
+    const genAI = getGeminiClient();
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        temperature: 0.7,
+      }
+    });
     
     const prompt = `You are an expert resume analyzer and career coach. Analyze the following resume for a ${roleName} position.
 
@@ -46,7 +61,7 @@ ${resumeText}
 Required Skills for ${roleName}:
 ${requiredSkills.join(', ')}
 
-Please provide a detailed analysis in the following JSON format:
+Please provide a detailed analysis in the following JSON format (respond with ONLY valid JSON, no markdown or additional text):
 {
   "matchPercentage": <number 0-100>,
   "atsScore": <number 0-100>,
@@ -61,44 +76,49 @@ Important:
 - Consider context and experience level when matching skills
 - Provide specific, actionable suggestions
 - ATS score should consider formatting, keywords, and structure
-- Match percentage should reflect how well the candidate fits the role`;
+- Match percentage should reflect how well the candidate fits the role
+- Respond with ONLY the JSON object, no markdown formatting`;
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert resume analyzer. Always respond with valid JSON only, no additional text.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      response_format: { type: 'json_object' }
-    });
-
-    console.log('✅ Received AI response');
-
-    const content = response.choices[0].message.content;
-    if (!content) {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    if (!text) {
       throw new Error('No response from AI');
     }
 
-    const result = JSON.parse(content);
-    console.log('✅ AI analysis complete:', { matchPercentage: result.matchPercentage, atsScore: result.atsScore });
-    return result as AIAnalysisResult;
-  } catch (error: any) {
-    console.error('❌ AI Analysis Error:', error);
+    // Clean up the response - remove markdown code blocks if present
+    let cleanedText = text.trim();
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/```\n?/g, '');
+    }
     
-    // Check for specific error types
-    if (error?.status === 429) {
-      throw new Error('OpenAI API quota exceeded. Please check your billing details or try again later.');
-    } else if (error?.status === 401) {
-      throw new Error('Invalid OpenAI API key. Please check your configuration.');
-    } else if (error?.message?.includes('quota')) {
-      throw new Error('OpenAI API quota exceeded. Using basic analysis instead.');
+    const analysisResult = JSON.parse(cleanedText);
+    log(LogLevel.INFO, 'AI analysis complete', { 
+      matchPercentage: analysisResult.matchPercentage, 
+      atsScore: analysisResult.atsScore 
+    });
+    return analysisResult as AIAnalysisResult;
+  } catch (error: any) {
+    log(LogLevel.ERROR, 'AI Analysis Error', {
+      errorType: error?.constructor?.name,
+      status: error?.status,
+      message: error?.message
+    });
+    
+    // Enhanced error handling with specific messages
+    if (error?.message?.includes('API_KEY_INVALID') || error?.message?.includes('invalid API key')) {
+      throw new Error('Invalid Gemini API key. Please verify your key at https://makersuite.google.com/app/apikey');
+    } else if (error?.message?.includes('quota') || error?.message?.includes('RESOURCE_EXHAUSTED')) {
+      throw new Error('Gemini API quota exceeded. Please check your usage at https://makersuite.google.com/');
+    } else if (error?.code === 'ENOTFOUND' || error?.code === 'ETIMEDOUT') {
+      throw new Error('Network error connecting to Gemini. Please check your internet connection');
+    } else if (error?.message?.includes('timeout')) {
+      throw new Error('Gemini API request timed out. Please try again');
+    } else if (error?.message?.includes('JSON')) {
+      throw new Error('Failed to parse AI response. Please try again.');
     }
     
     throw new Error('Failed to analyze resume with AI. Please try again.');
@@ -106,13 +126,24 @@ Important:
 }
 
 export function isAIConfigured(): boolean {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const isConfigured = !!apiKey && apiKey.length > 20;
-  console.log('AI Configuration Check:', {
-    hasApiKey: !!apiKey,
-    keyLength: apiKey?.length || 0,
-    keyPrefix: apiKey?.substring(0, 15) || 'none',
-    isConfigured: isConfigured
+  // Use cached validation result if available
+  if (validationCache !== null) {
+    return validationCache.isValid;
+  }
+  
+  const config = getEnvConfig();
+  const validation = validateGeminiKey(config.geminiApiKey);
+  
+  // Cache the result
+  validationCache = validation;
+  
+  log(LogLevel.DEBUG, 'AI Configuration Check', {
+    isConfigured: validation.isValid,
+    error: validation.error,
+    keyPresent: !!config.geminiApiKey,
+    keyLength: config.geminiApiKey?.length || 0,
+    keyPrefix: maskApiKey(config.geminiApiKey)
   });
-  return isConfigured;
+  
+  return validation.isValid;
 }

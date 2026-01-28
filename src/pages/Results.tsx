@@ -16,6 +16,8 @@ import { ProgressBar } from '@/components/ProgressBar';
 import { SkillTag } from '@/components/SkillTag';
 import { ScoreCard } from '@/components/ScoreCard';
 import { AnalysisResult } from '@/lib/resumeData';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface StoredResults extends AnalysisResult {
   roleName: string;
@@ -27,6 +29,20 @@ interface StoredResults extends AnalysisResult {
 export default function Results() {
   const [results, setResults] = useState<StoredResults | null>(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to view results.',
+        variant: 'destructive',
+      });
+      navigate('/signin');
+    }
+  }, [currentUser, navigate, toast]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem('analysisResults');

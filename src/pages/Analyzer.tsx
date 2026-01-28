@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FileText, Upload, Sparkles, Briefcase, ChevronRight, Loader2 } from 'lucide-react';
@@ -25,6 +25,18 @@ export default function Analyzer() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { toast } = useToast();
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in to analyze resumes.',
+        variant: 'destructive',
+      });
+      navigate('/signin');
+    }
+  }, [currentUser, navigate, toast]);
 
   const loadSample = () => {
     setResumeText(sampleResumeText);
@@ -114,19 +126,17 @@ export default function Analyzer() {
           } catch (error: any) {
             console.error('AI analysis failed, falling back to basic analysis:', error);
             
-            // Check if it's a quota error
-            const isQuotaError = error?.message?.includes('quota') || error?.message?.includes('429');
-            
             results = {
               ...analyzeResume(resumeText, selectedRole),
               isAIPowered: false,
             };
             
+            // Use the error message from the AI service
+            const errorMessage = error?.message || 'AI analysis unavailable. Using keyword matching.';
+            
             toast({
               title: 'Using Basic Analysis',
-              description: isQuotaError 
-                ? 'OpenAI API quota exceeded. Using keyword matching instead.'
-                : 'AI analysis unavailable. Using keyword matching.',
+              description: errorMessage,
             });
           }
         } else {
@@ -189,6 +199,18 @@ export default function Analyzer() {
       setIsAnalyzing(false);
     }
   };
+
+  // Show loading state while checking authentication
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen mesh-bg flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen mesh-bg pt-24 pb-16">
