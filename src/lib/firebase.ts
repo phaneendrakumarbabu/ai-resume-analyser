@@ -13,18 +13,29 @@ const firebaseConfig = {
   measurementId: "G-90RGJP4RBJ"
 };
 
+console.log('🔥 Initializing Firebase...');
+console.log('Project ID:', firebaseConfig.projectId);
+console.log('Auth Domain:', firebaseConfig.authDomain);
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+console.log('✅ Firebase app initialized:', app.name);
 
 // Initialize services
 export const auth = getAuth(app);
+console.log('✅ Firebase Auth initialized');
+console.log('Auth current user:', auth.currentUser);
+
 export const db = getFirestore(app);
+console.log('✅ Firestore initialized');
+
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize analytics (only in browser)
 let analytics;
 if (typeof window !== 'undefined') {
   analytics = getAnalytics(app);
+  console.log('✅ Analytics initialized');
 }
 
 export { analytics };

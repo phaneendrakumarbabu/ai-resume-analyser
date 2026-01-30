@@ -11,6 +11,7 @@ import Results from "./pages/Results";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import FirebaseTest from "./pages/FirebaseTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/firebase-test" element={<FirebaseTest />} />
             <Route path="/*" element={
               <>
                 <Navbar />

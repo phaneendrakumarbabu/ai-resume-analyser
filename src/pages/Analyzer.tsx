@@ -108,48 +108,71 @@ export default function Analyzer() {
         const requiredSkills = skillsByRole[selectedRole] || [];
         
         let results;
+        let analysisMethod = 'basic';
         
-        // Try AI analysis first if configured
-        if (isAIConfigured()) {
+        // Priority: 1. Gemini AI, 2. Basic keyword matching
+        
+        // Try Gemini AI first
+        console.log('🔍 Checking if AI is configured...');
+        const aiConfigured = isAIConfigured();
+        console.log('🔍 AI configured result:', aiConfigured);
+        
+        if (aiConfigured) {
+          console.log('✅ AI is configured, starting Gemini AI analysis...');
           try {
-            console.log('Starting AI analysis...');
+            console.log('Starting Gemini AI analysis...');
             const aiResults = await analyzeResumeWithAI(resumeText, selectedRole, roleName, requiredSkills);
             results = {
               ...aiResults,
               isAIPowered: true,
+              modelType: 'gemini',
             };
+            analysisMethod = 'ai';
             
             toast({
               title: 'AI Analysis Complete',
-              description: 'Your resume has been analyzed using advanced AI.',
+              description: 'Your resume has been analyzed using Gemini AI.',
             });
           } catch (error: any) {
-            console.error('AI analysis failed, falling back to basic analysis:', error);
-            
-            results = {
-              ...analyzeResume(resumeText, selectedRole),
-              isAIPowered: false,
-            };
-            
-            // Use the error message from the AI service
-            const errorMessage = error?.message || 'AI analysis unavailable. Using keyword matching.';
-            
-            toast({
-              title: 'Using Basic Analysis',
-              description: errorMessage,
+            console.error('❌ AI analysis failed:', error);
+            console.error('❌ Error details:', {
+              message: error.message,
+              status: error.status,
+              code: error.code,
+              type: error.constructor.name
             });
+            
+            // Show specific error message for server overload
+            if (error.message.includes('overloaded') || error.message.includes('temporarily') || error.message.includes('503')) {
+              toast({
+                title: 'AI Servers Busy',
+                description: 'Gemini servers are overloaded. Using enhanced keyword analysis instead.',
+                variant: 'default',
+              });
+            } else {
+              toast({
+                title: 'AI Temporarily Unavailable',
+                description: 'Using keyword analysis. AI will be back shortly.',
+                variant: 'default',
+              });
+            }
+            // Continue to basic analysis
           }
-        } else {
-          // Fallback to basic analysis
-          console.log('AI not configured, using basic analysis');
+        }
+        
+        // Fallback to basic keyword matching
+        if (!results) {
+          console.log('Using basic keyword matching analysis');
           results = {
             ...analyzeResume(resumeText, selectedRole),
             isAIPowered: false,
+            modelType: 'basic',
           };
+          analysisMethod = 'basic';
           
           toast({
             title: 'Using Basic Analysis',
-            description: 'AI analysis unavailable. Using keyword matching.',
+            description: 'Advanced analysis unavailable. Using keyword matching.',
           });
         }
         

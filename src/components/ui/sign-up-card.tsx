@@ -22,15 +22,15 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   )
 }
 
-export function SignInCard() {
+export function SignUpCard() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false);
   
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -54,10 +54,28 @@ export function SignInCard() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       toast({
         title: 'Missing Information',
-        description: 'Please enter both email and password',
+        description: 'Please fill in all fields',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: 'Passwords do not match',
+        description: 'Please make sure your passwords match',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 6 characters',
         variant: 'destructive'
       });
       return;
@@ -66,17 +84,31 @@ export function SignInCard() {
     setIsLoading(true);
     
     try {
-      await signIn(email, password);
+      await signUp(email, password);
       toast({
-        title: 'Welcome back!',
-        description: 'Successfully signed in',
+        title: 'Account created!',
+        description: 'Welcome to ResumeAI Pro',
       });
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Sign in error:', error);
+      console.error('Sign up error:', error);
+      
+      let errorMessage = 'Could not create account';
+      if (error?.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered';
+      } else if (error?.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error?.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak';
+      } else if (error?.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Email/Password sign-up is not enabled';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: 'Sign In Failed',
-        description: error.message || 'Invalid email or password',
+        title: 'Sign Up Failed',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
@@ -84,20 +116,20 @@ export function SignInCard() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     setIsLoading(true);
     try {
       await signInWithGoogle();
       toast({
         title: 'Welcome!',
-        description: 'Successfully signed in with Google',
+        description: 'Account created successfully',
       });
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Google sign in error:', error);
+      console.error('Google sign up error:', error);
       toast({
-        title: 'Sign In Failed',
-        description: error.message || 'Could not sign in with Google',
+        title: 'Sign Up Failed',
+        description: error.message || 'Could not sign up with Google',
         variant: 'destructive'
       });
     } finally {
@@ -364,7 +396,7 @@ export function SignInCard() {
                   transition={{ delay: 0.2 }}
                   className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
                 >
-                  Welcome Back
+                  Create Account
                 </motion.h1>
 
                 <motion.p
@@ -373,11 +405,11 @@ export function SignInCard() {
                   transition={{ delay: 0.3 }}
                   className="text-white/60 text-xs"
                 >
-                  Sign in to continue to ResumeAI Pro
+                  Sign up to start using ResumeAI Pro
                 </motion.p>
               </div>
 
-              {/* Login form */}
+              {/* Sign up form */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <motion.div className="space-y-3">
                   {/* Email input */}
@@ -453,45 +485,41 @@ export function SignInCard() {
                       )}
                     </div>
                   </motion.div>
-                </motion.div>
 
-                {/* Remember me & Forgot password */}
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center space-x-2">
-                    <div className="relative">
-                      <input
-                        id="remember-me"
-                        name="remember-me"
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={() => setRememberMe(!rememberMe)}
-                        className="appearance-none h-4 w-4 rounded border border-white/20 bg-white/5 checked:bg-white checked:border-white focus:outline-none focus:ring-1 focus:ring-white/30 transition-all duration-200"
+                  {/* Confirm Password input */}
+                  <motion.div 
+                    className={`relative ${focusedInput === "confirmPassword" ? 'z-10' : ''}`}
+                    whileFocus={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  >
+                    <div className="absolute -inset-[0.5px] bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                    <div className="relative flex items-center overflow-hidden rounded-lg">
+                      <Lock className={`absolute left-3 w-4 h-4 transition-all duration-300 ${focusedInput === "confirmPassword" ? 'text-white' : 'text-white/40'}`} />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Confirm password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onFocus={() => setFocusedInput("confirmPassword")}
+                        onBlur={() => setFocusedInput(null)}
+                        className="w-full bg-white/5 border-transparent focus:border-white/20 text-white placeholder:text-white/30 h-10 transition-all duration-300 pl-10 pr-3 focus:bg-white/10"
                       />
-                      {rememberMe && (
+                      {focusedInput === "confirmPassword" && (
                         <motion.div 
-                          initial={{ opacity: 0, scale: 0.5 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="absolute inset-0 flex items-center justify-center text-black pointer-events-none"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                        </motion.div>
+                          layoutId="input-highlight"
+                          className="absolute inset-0 bg-white/5 -z-10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        />
                       )}
                     </div>
-                    <label htmlFor="remember-me" className="text-xs text-white/60 hover:text-white/80 transition-colors duration-200">
-                      Remember me
-                    </label>
-                  </div>
+                  </motion.div>
+                </motion.div>
 
-                  <div className="text-xs relative group/link">
-                    <Link to="/forgot-password" className="text-white/60 hover:text-white transition-colors duration-200">
-                      Forgot password?
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Sign in button */}
+                {/* Sign up button */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -534,7 +562,7 @@ export function SignInCard() {
                           exit={{ opacity: 0 }}
                           className="flex items-center justify-center gap-1 text-sm font-medium"
                         >
-                          Sign In
+                          Sign Up
                           <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
                         </motion.span>
                       )}
@@ -556,12 +584,12 @@ export function SignInCard() {
                   <div className="flex-grow border-t border-white/5"></div>
                 </div>
 
-                {/* Google Sign In */}
+                {/* Google Sign Up */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="button"
-                  onClick={handleGoogleSignIn}
+                  onClick={handleGoogleSignUp}
                   disabled={isLoading}
                   className="w-full relative group/google"
                 >
@@ -571,7 +599,7 @@ export function SignInCard() {
                       G
                     </div>
                     <span className="text-white/80 group-hover/google:text-white transition-colors text-xs">
-                      Sign in with Google
+                      Sign up with Google
                     </span>
                     <motion.div 
                       className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0"
@@ -582,19 +610,19 @@ export function SignInCard() {
                   </div>
                 </motion.button>
 
-                {/* Sign up link */}
+                {/* Sign in link */}
                 <motion.p 
                   className="text-center text-xs text-white/60 mt-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  Don't have an account?{' '}
-                  <Link to="/signup" className="relative inline-block group/signup">
-                    <span className="relative z-10 text-white group-hover/signup:text-white/70 transition-colors duration-300 font-medium">
-                      Sign up
+                  Already have an account?{' '}
+                  <Link to="/signin" className="relative inline-block group/signin">
+                    <span className="relative z-10 text-white group-hover/signin:text-white/70 transition-colors duration-300 font-medium">
+                      Sign in
                     </span>
-                    <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover/signup:w-full transition-all duration-300" />
+                    <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover/signin:w-full transition-all duration-300" />
                   </Link>
                 </motion.p>
               </form>

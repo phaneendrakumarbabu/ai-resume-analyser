@@ -39,7 +39,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    console.log('=== AUTH CONTEXT SIGNUP ===');
+    console.log('Email:', email);
+    console.log('Password length:', password.length);
+    console.log('Auth object:', auth);
+    console.log('Auth app name:', auth.app.name);
+    
+    try {
+      console.log('Calling createUserWithEmailAndPassword...');
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('✅ User created successfully!');
+      console.log('User ID:', result.user.uid);
+      console.log('User email:', result.user.email);
+      return result;
+    } catch (error: any) {
+      console.error('❌ AUTH CONTEXT ERROR:');
+      console.error('Error object:', error);
+      console.error('Error code:', error?.code);
+      console.error('Error message:', error?.message);
+      console.error('Error name:', error?.name);
+      throw error;
+    }
   };
 
   const signInWithGoogle = async () => {
