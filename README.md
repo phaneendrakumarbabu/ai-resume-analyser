@@ -5,16 +5,23 @@ An AI-powered resume analyzer that helps job seekers match their skills to job r
 ![ResumeAI Pro](https://img.shields.io/badge/AI-Powered-blue)
 ![React](https://img.shields.io/badge/React-18.3.1-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-green)
+![Gemini](https://img.shields.io/badge/Google%20Gemini-Generative%20AI-green)
 ![Firebase](https://img.shields.io/badge/Firebase-Integrated-orange)
 
-## 🌐 Live Demo
+## Overview
 
-**Deployed on Vercel**: [Coming Soon]
+ResumeAI Pro is a React + TypeScript web app that analyzes a resume against a target role and returns:
+
+- Match percentage
+- ATS score
+- Matched and missing skills
+- Actionable suggestions to improve the resume
+
+The app uses Google Gemini for AI-powered analysis, with an optional local XGBoost service for ML-based scoring.
 
 ## ✨ Features
 
-- **AI-Powered Analysis** - Uses OpenAI GPT-4o-mini for intelligent resume analysis
+- **AI-Powered Analysis** - Uses Google Gemini for intelligent resume analysis
 - **Skill Matching** - Compare your skills against job requirements instantly
 - **ATS Score** - Get your resume score for applicant tracking systems
 - **PDF Support** - Upload PDF resumes or paste text directly
@@ -27,7 +34,7 @@ An AI-powered resume analyzer that helps job seekers match their skills to job r
 
 - **Frontend**: React 18 + TypeScript
 - **Styling**: Tailwind CSS + Shadcn UI
-- **AI**: OpenAI GPT-4o-mini
+- **AI**: Google Gemini (Generative AI)
 - **PDF Parsing**: PDF.js
 - **Build Tool**: Vite
 - **Testing**: Vitest + Testing Library
@@ -38,14 +45,14 @@ An AI-powered resume analyzer that helps job seekers match their skills to job r
 
 - Node.js 18+ 
 - npm or yarn
-- OpenAI API key
+- Google Gemini API key
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/phaneendrakumarbabu/skill-matcher-pro.git
-cd skill-matcher-pro
+git clone https://github.com/phaneendrakumarbabu/ai-resume-analyser.git
+cd ai-resume-analyser
 ```
 
 2. Install dependencies:
@@ -55,7 +62,10 @@ npm install
 
 3. Create a `.env` file in the root directory:
 ```bash
-VITE_OPENAI_API_KEY=your_openai_api_key_here
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+# Optional (XGBoost ML service)
+VITE_XGBOOST_ENABLED=true
+VITE_XGBOOST_API_URL=http://localhost:5000
 ```
 
 4. Start the development server:
@@ -76,16 +86,18 @@ npm run dev
 
 ### Environment Variables
 
-- `VITE_OPENAI_API_KEY` - Your OpenAI API key (required for AI analysis)
+- `VITE_GEMINI_API_KEY` - Your Google Gemini API key (required for AI analysis)
+- `VITE_XGBOOST_ENABLED` - Enable/disable XGBoost ML service integration (default: enabled)
+- `VITE_XGBOOST_API_URL` - XGBoost service URL (default: `http://localhost:5000`)
 
 ### Fallback Mode
 
-If the OpenAI API key is not configured or the API fails, the app automatically falls back to basic keyword matching analysis.
+If AI analysis is not configured or fails, the app automatically falls back to other available methods (including basic keyword matching).
 
 ## 🏗️ Project Structure
 
 ```
-skill-matcher-pro/
+ai-resume-analyser/
 ├── public/              # Static assets
 │   ├── favicon.svg      # App icon
 │   └── robots.txt
@@ -96,7 +108,7 @@ skill-matcher-pro/
 │   │   ├── ProgressBar.tsx
 │   │   └── ...
 │   ├── lib/            # Utility functions
-│   │   ├── aiService.ts      # OpenAI integration
+│   │   ├── aiService.ts      # Gemini integration
 │   │   ├── pdfParser.ts      # PDF parsing
 │   │   └── resumeData.ts     # Resume analysis logic
 │   ├── pages/          # Page components
@@ -104,6 +116,7 @@ skill-matcher-pro/
 │   │   ├── Analyzer.tsx
 │   │   └── Results.tsx
 │   └── main.tsx        # App entry point
+├── ml-service/          # Optional Flask + XGBoost ML service
 ├── .env.example        # Example environment variables
 └── package.json
 ```
@@ -134,17 +147,13 @@ npm run preview
 
 ## 🔒 Security Notes
 
-⚠️ **Important**: The current implementation uses `dangerouslyAllowBrowser: true` which exposes the API key in the browser. This is for development/demo purposes only.
+⚠️ **Important**: The current implementation calls the AI provider directly from the browser, which means API keys configured via Vite environment variables can be exposed to users. This is for development/demo purposes only.
 
 ### For Production:
 1. Create a backend API endpoint
-2. Move OpenAI calls to the backend
+2. Move AI calls to the backend
 3. Never expose API keys in frontend code
 4. Implement rate limiting and authentication
-
-## 💰 API Costs
-
-The AI analysis uses approximately 1,000-2,000 tokens per analysis, costing roughly $0.001-0.002 per resume with GPT-4o-mini.
 
 ## 🤝 Contributing
 
@@ -167,7 +176,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- [OpenAI](https://openai.com/) for the GPT-4o-mini API
+- [Google AI](https://ai.google.dev/) for the Gemini API
 - [Shadcn UI](https://ui.shadcn.com/) for the beautiful components
 - [Lucide](https://lucide.dev/) for the icons
 - [Tailwind CSS](https://tailwindcss.com/) for styling
@@ -180,134 +189,33 @@ If you have any questions or need help, please open an issue on GitHub.
 
 Made with ❤️ by Phaneendra Kumar Babu
 
+## 🧠 Optional: XGBoost ML Service
 
-## 🚀 Deployment
+This repo includes an optional local Flask + XGBoost service in `ml-service/`.
 
-### Deploy to Vercel (Recommended)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/phaneendrakumarbabu/skill-matcher-pro)
-
-**Manual Deployment:**
-
-1. **Install Vercel CLI**
+1. Train models (first time)
 ```bash
-npm install -g vercel
+cd ml-service
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python train_model.py
 ```
 
-2. **Login and Deploy**
+2. Start the service
 ```bash
-vercel login
-cd skill-matcher-pro-main
-vercel --prod
+python app.py
 ```
 
-3. **Set Environment Variables in Vercel Dashboard**
-   - Go to Project Settings → Environment Variables
-   - Add: `VITE_OPENAI_API_KEY` with your OpenAI API key
-
-4. **Update Firebase Authorized Domains**
-   - Go to Firebase Console → Authentication → Settings
-   - Add your Vercel domain (e.g., `your-app.vercel.app`)
-
-For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
-
-### Build Locally
-
+Then enable it in your `.env`:
 ```bash
-npm run build
-npm run preview
+VITE_XGBOOST_ENABLED=true
+VITE_XGBOOST_API_URL=http://localhost:5000
 ```
 
 ## 📚 Documentation
 
-- [Firebase Integration Guide](FIREBASE_INTEGRATION.md)
-- [Dashboard Features](DASHBOARD_FEATURES.md)
-- [Sign-In Integration](SIGNIN_INTEGRATION.md)
+- [Gemini API Setup](GEMINI_API_SETUP.md)
+- [Firebase Auth Setup](FIREBASE_AUTH_SETUP.md)
 - [Deployment Guide](DEPLOYMENT.md)
-
-## 🔐 Environment Variables
-
-Create a `.env` file in the root directory:
-
-```bash
-# Required for AI features
-VITE_OPENAI_API_KEY=your_openai_api_key_here
-
-# Firebase (already configured in code)
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
-```
-
-## 🎯 Roadmap
-
-- [x] AI-powered resume analysis
-- [x] User authentication (Firebase)
-- [x] Dashboard with history tracking
-- [x] PDF export functionality
-- [x] Beautiful sign-in/up pages
-- [ ] Cover letter generator
-- [ ] LinkedIn profile analyzer
-- [ ] Job matching system
-- [ ] Mobile app (React Native)
-- [ ] Chrome extension
-
-## 📊 Tech Stack
-
-**Frontend:**
-- React 18 + TypeScript
-- Vite (Build tool)
-- Tailwind CSS + Shadcn UI
-- Framer Motion (Animations)
-- Recharts (Data visualization)
-
-**Backend:**
-- Firebase Authentication
-- Cloud Firestore
-- Firebase Analytics
-
-**AI:**
-- OpenAI GPT-4o-mini
-
-**Deployment:**
-- Vercel (Recommended)
-- Compatible with Netlify, Railway, etc.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👨‍💻 Author
-
-**Phaneendra Kumar Babu**
-- GitHub: [@phaneendrakumarbabu](https://github.com/phaneendrakumarbabu)
-- Project: [ResumeAI Pro](https://github.com/phaneendrakumarbabu/skill-matcher-pro)
-
-## 🙏 Acknowledgments
-
-- [OpenAI](https://openai.com/) for the GPT-4o-mini API
-- [Firebase](https://firebase.google.com/) for authentication and database
-- [Shadcn UI](https://ui.shadcn.com/) for the beautiful components
-- [Lucide](https://lucide.dev/) for the icons
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-- [Vercel](https://vercel.com/) for hosting
-
-## 📧 Support
-
-If you have any questions or need help, please open an issue on GitHub.
-
----
-
-**Made with ❤️ by Phaneendra Kumar Babu**
-
-⭐ Star this repo if you find it helpful!
+- [XGBoost Quick Start](QUICK_START_XGBOOST.md)
