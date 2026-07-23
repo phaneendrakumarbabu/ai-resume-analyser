@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { historyService, AnalysisHistory } from '@/lib/historyService';
 import { exportAnalysisToPDF, exportComparisonToPDF } from '@/lib/pdfExport';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, Grid, XAxis, ChartTooltip } from '@/components/ui/bklit-line-chart';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -197,7 +197,7 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
-        {/* Chart */}
+        {/* Bklit UI Composable Line Chart */}
         {chartData.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -205,61 +205,31 @@ export default function Dashboard() {
             transition={{ delay: 0.3, duration: 0.4 }}
             className="mb-8"
           >
-            <div className="rounded-xl border border-border bg-card/80 backdrop-blur-md">
-              <div className="p-5 sm:p-6 border-b border-border">
-                <h3 className="text-sm font-semibold text-foreground">Score Trends</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Track your improvement over time</p>
+            <div className="rounded-xl border border-border bg-card/80 backdrop-blur-md overflow-hidden transition-all duration-200 hover:shadow-md hover:border-foreground/20">
+              <div className="p-5 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Score Trends</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Track your improvement over time</p>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-0.5 rounded-full bg-primary inline-block" />
+                    <span className="text-muted-foreground font-medium">Skill Match %</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-0.5 rounded-full bg-foreground/60 inline-block" />
+                    <span className="text-muted-foreground font-medium">ATS Score</span>
+                  </div>
+                </div>
               </div>
               <div className="p-5 sm:p-6">
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={{ stroke: 'var(--border)' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
-                      tickLine={false}
-                      axisLine={{ stroke: 'var(--border)' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'var(--card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                      }}
-                      labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
-                      itemStyle={{ color: 'var(--muted-foreground)' }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '12px' }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="skillMatch" 
-                      stroke="var(--foreground)" 
-                      strokeWidth={2}
-                      name="Skill Match %"
-                      dot={{ fill: 'var(--foreground)', r: 3 }}
-                      activeDot={{ r: 5 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="atsScore" 
-                      stroke="var(--muted-foreground)" 
-                      strokeWidth={2}
-                      strokeDasharray="4 4"
-                      name="ATS Score"
-                      dot={{ fill: 'var(--muted-foreground)', r: 3 }}
-                      activeDot={{ r: 5 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <LineChart data={chartData} xDataKey="date" aspectRatio="2.6 / 1">
+                  <Grid horizontal stroke="var(--border)" numTicksRows={5} />
+                  <Line dataKey="skillMatch" stroke="var(--primary)" strokeWidth={2.5} showHighlight showMarkers />
+                  <Line dataKey="atsScore" stroke="var(--foreground)" strokeWidth={2} showHighlight showMarkers />
+                  <XAxis tickMode="data" />
+                  <ChartTooltip showDatePill showCrosshair showDots />
+                </LineChart>
               </div>
             </div>
           </motion.div>
