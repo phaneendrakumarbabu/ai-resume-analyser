@@ -1,0 +1,79 @@
+{
+  "frontend": [
+    "React",
+    "JavaScript",
+    "TypeScript",
+    "HTML",
+    "CSS",
+    "Redux",
+    "Next.js",
+    "Vue.js",
+    "Angular",
+    "Webpack",
+    "Jest"
+  ],
+  "backend": [
+    "Python",
+    "Node.js",
+    "Java",
+    "SQL",
+    "MongoDB",
+    "REST API",
+    "GraphQL",
+    "Docker",
+    "AWS",
+    "Redis",
+    "Microservices"
+  ],
+  "fullstack": [
+    "React",
+    "Node.js",
+    "TypeScript",
+    "MongoDB",
+    "Express",
+    "REST API",
+    "Docker",
+    "AWS",
+    "Git",
+    "Jest",
+    "CI/CD"
+  ],
+  "devops": [
+    "Docker",
+    "Kubernetes",
+    "AWS",
+    "CI/CD",
+    "Jenkins",
+    "Terraform",
+    "Linux",
+    "Bash",
+    "Python",
+    "Monitoring",
+    "Git"
+  ],
+  "mobile": [
+    "React Native",
+    "Flutter",
+    "Swift",
+    "Kotlin",
+    "iOS",
+    "Android",
+    "Firebase",
+    "Redux",
+    "REST API",
+    "Git"
+  ],
+  "data": [
+    "Python",
+    "SQL",
+    "Machine Learning",
+    "TensorFlow",
+    "PyTorch",
+    "Pandas",
+    "NumPy",
+    "Spark",
+    "Tableau",
+    "Statistics",
+    "R"
+  ]
+}

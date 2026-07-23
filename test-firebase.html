@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Auth Test</title>
+</head>
+<body>
+    <h1>Firebase Authentication Test</h1>
+    <div id="status">Testing...</div>
+    <div id="result"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnrbaEvRcO1kC5KOQL-f0cId1jH5C-8dM",
+            authDomain: "ai-resume-analyzer-13d49.firebaseapp.com",
+            projectId: "ai-resume-analyzer-13d49",
+            storageBucket: "ai-resume-analyzer-13d49.firebasestorage.app",
+            messagingSenderId: "656198145803",
+            appId: "1:656198145803:web:a73ab3bf556705e2f8f40e"
+        };
+
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            
+            statusDiv.innerHTML = '✅ Firebase initialized successfully';
+            
+            // Try to create a test user
+            const testEmail = 'test' + Date.now() + '@example.com';
+            const testPassword = 'test123456';
+            
+            resultDiv.innerHTML = `<p>Attempting to create user: ${testEmail}</p>`;
+            
+            createUserWithEmailAndPassword(auth, testEmail, testPassword)
+                .then((userCredential) => {
+                    resultDiv.innerHTML += '<p style="color: green;">✅ SUCCESS! User created: ' + userCredential.user.email + '</p>';
+                    resultDiv.innerHTML += '<p>Firebase authentication is working correctly!</p>';
+                })
+                .catch((error) => {
+                    resultDiv.innerHTML += '<p style="color: red;">❌ ERROR: ' + error.code + '</p>';
+                    resultDiv.innerHTML += '<p style="color: red;">Message: ' + error.message + '</p>';
+                    
+                    if (error.code === 'auth/email-already-in-use') {
+                        resultDiv.innerHTML += '<p style="color: orange;">This is actually good - it means Firebase auth is working!</p>';
+                    }
+                });
+            
+        } catch (error) {
+            statusDiv.innerHTML = '❌ Firebase initialization failed';
+            resultDiv.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>
