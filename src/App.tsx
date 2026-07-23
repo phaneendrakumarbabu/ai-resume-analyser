@@ -24,8 +24,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <div className="relative min-h-screen bg-background text-foreground">
-          <NeuralBackground className="fixed inset-0 pointer-events-none z-0 opacity-25 dark:opacity-20" />
-          <div className="fixed inset-0 pointer-events-none z-0 bg-background/50 backdrop-blur-[1px]" />
+          <NeuralBackground className="fixed inset-0 pointer-events-none z-0 opacity-65 dark:opacity-55" />
           <div className="relative z-10">
             <BrowserRouter>
               <Routes>
