@@ -27,8 +27,8 @@ interface NeuralBackgroundProps {
 export default function NeuralBackground({
   className,
   color,
-  trailOpacity = 0.15,
-  particleCount = 500,
+  trailOpacity = 0.2,
+  particleCount = 250,
   speed = 1,
 }: NeuralBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -132,7 +132,7 @@ export default function NeuralBackground({
 
       draw(context: CanvasRenderingContext2D) {
         context.fillStyle = activeColor;
-        const alpha = (1 - Math.abs(this.age / this.life - 0.5) * 2) * 0.7;
+        const alpha = (1 - Math.abs(this.age / this.life - 0.5) * 2) * 0.4;
         context.globalAlpha = Math.max(0, Math.min(1, alpha));
         context.fillRect(this.x, this.y, 2, 2);
       }
@@ -161,7 +161,7 @@ export default function NeuralBackground({
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < maxDistance) {
-            const alpha = (1 - dist / maxDistance) * 0.15;
+            const alpha = (1 - dist / maxDistance) * 0.08;
             ctx.strokeStyle = activeColor;
             ctx.globalAlpha = alpha;
             ctx.lineWidth = 1;
