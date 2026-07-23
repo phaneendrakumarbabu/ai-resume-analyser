@@ -296,7 +296,7 @@ export default function Analyzer() {
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
               placeholder="Paste your resume text here..."
-              className="min-h-[240px] resize-none font-mono text-xs leading-relaxed bg-card text-foreground dark:bg-card dark:text-foreground dark:border-border/80 dark:placeholder:text-muted-foreground/80 shadow-xs"
+              className="min-h-[240px] resize-none font-mono text-xs leading-relaxed bg-white text-zinc-900 border-zinc-200 placeholder:text-zinc-400 dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800 dark:placeholder:text-zinc-500 shadow-sm"
             />
             
             <p className="text-xs text-muted-foreground mt-3 font-mono">
