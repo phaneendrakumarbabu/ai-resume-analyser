@@ -266,12 +266,12 @@ export default function Analyzer() {
                 <h2 className="text-sm font-semibold text-foreground">Your Resume</h2>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={loadSample} className="gap-1.5 text-xs bg-background/50">
+                <Button variant="outline" size="sm" onClick={loadSample} className="gap-1.5 text-xs bg-card hover:bg-muted/80 text-foreground border-border/80">
                   <Sparkles className="w-3.5 h-3.5" />
                   Load Sample
                 </Button>
                 <label>
-                  <Button variant="outline" size="sm" asChild className="gap-1.5 cursor-pointer text-xs bg-background/50" disabled={isParsing}>
+                  <Button variant="outline" size="sm" asChild className="gap-1.5 cursor-pointer text-xs bg-card hover:bg-muted/80 text-foreground border-border/80" disabled={isParsing}>
                     <span>
                       {isParsing ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -296,7 +296,7 @@ export default function Analyzer() {
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
               placeholder="Paste your resume text here..."
-              className="min-h-[220px] resize-none font-mono text-xs leading-relaxed bg-background/50 backdrop-blur-xs"
+              className="min-h-[240px] resize-none font-mono text-xs leading-relaxed bg-card text-foreground dark:bg-card dark:text-foreground dark:border-border/80 dark:placeholder:text-muted-foreground/80 shadow-xs"
             />
             
             <p className="text-xs text-muted-foreground mt-3 font-mono">
@@ -328,7 +328,7 @@ export default function Analyzer() {
                     className={`p-3 rounded-lg border transition-all duration-200 text-left ${
                       isSelected
                         ? 'border-foreground bg-foreground/10 ring-1 ring-foreground'
-                        : 'border-border/60 hover:border-foreground/20 hover:bg-muted/50 bg-background/40'
+                        : 'border-border/80 hover:border-foreground/30 hover:bg-muted/60 bg-card text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
